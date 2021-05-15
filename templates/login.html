@@ -20,12 +20,44 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
             integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
+
+    <!--jQuery 쿠키 관리 플러그인-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <script>
         // ['쿠키'라는 개념에 대해 알아봅시다]
         // 로그인을 구현하면, 반드시 쿠키라는 개념을 사용합니다.
         // 페이지에 관계없이 브라우저에 임시로 저장되는 정보입니다. 키:밸류 형태(딕셔너리 형태)로 저장됩니다.
         // 쿠키가 있기 때문에, 한번 로그인하면 네이버에서 다시 로그인할 필요가 없는 것입니다.
         // 브라우저를 닫으면 자동 삭제되게 하거나, 일정 시간이 지나면 삭제되게 할 수 있습니다.
+
+        $(document).ready(function () {
+            setUserInfo()
+        });
+
+        function setUserInfo() {
+            let userInfo = $('#user-info')
+            let token = $.cookie('loginToken')
+            if (token === undefined) {
+                window.location.href = '/login'
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/user',
+                    headers: {'authorization': `Bearer ${token}`},
+                    data: {},
+                    success: function (response) {
+                        if (response['result'] === 'success') {
+                            let id = response['id']
+                            userInfo.append(`
+                                <div class="btn btn-primary">${id}</div>
+                                <button onClick="logOut()" class="btn btn-primary">LOGOUT</button>
+                            `)
+                        }
+                    }
+                })
+            }
+        }
+
         function login() {
             $.ajax({
                 type: "POST",
@@ -46,6 +78,8 @@
             })
         }
     </script>
+
+
 </head>
 <body>
 <h1>로그인 페이지</h1>

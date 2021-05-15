@@ -1,3 +1,5 @@
+import hashlib
+
 import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, jsonify
@@ -9,7 +11,7 @@ app = Flask(__name__)
 
 # mongodb 추가
 client = MongoClient('localhost', 27017)
-db = client.get_database('sparta')
+db = client.get_database('person')
 
 
 # API 추가
@@ -54,6 +56,7 @@ def save_memo():
         {'result': 'success', 'msg': '저장했습니다.'}
     )
 
+
 @app.route('/memo', methods=['GET'])
 def list_memo():
     memos = list(db.articles.find({}, {'_id': False}))
@@ -64,13 +67,41 @@ def list_memo():
 
     return jsonify(result)
 
+
 @app.route('login', methods=['GET'])
 def login():
     return render_template('login.html')
 
+
 @app.route('register', methods=['GET'])
-def login():
+def register():
     return render_template('register.html')
+
+
+@app.route('/api/login', methods=['GET'])
+def api_login():
+    id = request.form['id_give']
+    pw = request.form['pw_give']
+
+    # TODO id, pw 검증 후에 JWT 만들어서 리턴
+
+
+@app.route('/api/register', methods=['GET'])
+def api_register():
+    id = request.form['id_give']
+    pw = request.form['pw_give']
+
+    # salting
+    # 1. pw + 랜덤 문자열 추가(솔트)
+    # 솔트 추가된 비밀번호를 해시
+    # DB에 저장할때는(해시 결과물 + 적절한 솔트) 묶어서 저장
+
+    # 회원가입
+    pw_hash = hashlib.sha256(pw.encode()).hexdigest()
+    db.users.insert_one({'id': id, 'pw': pw_hash})
+
+    return jsonify({'result':'success'})
+
 
 # app.py 파일을 직접 실행시킬 때 동작시킴
 # 이 코드가 가장 아랫부분
@@ -78,5 +109,5 @@ if __name__ == '__main__':
     app.run(
         '0.0.0.0',  # 모든 IP에서 오는 요청을 허용
         7000,  # 플라스크 웹 서버는 7000번 포트 사용
-        debug=True,  # 에러 발생 시 에러 로그 보여줌
+         debug=True,  # 에러 발생 시 에러 로그 보여줌
     )
