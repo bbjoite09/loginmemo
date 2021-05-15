@@ -17,11 +17,10 @@ app = Flask(__name__)
 client = MongoClient('localhost', 27017)
 db = client.get_database('person')
 
-# .env 파일을 환경변수로 설정
+# .env 파일 읽어와 환경변수로 추가
 load_dotenv()
-# 환경변수 읽어오기
-JWT_SECRET = os.environ['JET_SECRET']
-
+# load_dotenv() 설정
+JWT_SECRET = os.environ['JWT_SECRET']
 
 # API 추가
 @app.route('/', methods=['GET'])  # 데코레이터 문법
@@ -128,6 +127,22 @@ def api_register():
     db.users.insert_one({'id': id, 'pw': pw_hash})
 
     return jsonify({'result':'success'})
+
+
+@app.route('/user', methods=["POST"])
+def user_info():
+    token_receive = request.headers['authorization']
+    token = token_receive.split()[1]
+
+    payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        print(payload)
+        return jsonify({'result' : 'success', 'id': payload['id']})
+    except jwt.exceptions.ExpiredSignatureError:
+        # try부분을 실행했지만 위와 같은 에러가 발생했다면
+        return jsonify({'result' : 'fail'})
 
 
 # app.py 파일을 직접 실행시킬 때 동작시킴
