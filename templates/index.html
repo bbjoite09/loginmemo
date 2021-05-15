@@ -16,7 +16,9 @@
             integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
     <!-- 구글폰트 -->
-    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poor+Story&display=swap" rel="stylesheet">
+
     <title>스파르타코딩클럽 | 나홀로 메모장</title>
     <!-- style -->
     <style type="text/css">
@@ -176,16 +178,16 @@
     </div>
     <div id="cards-box" class="card-columns">
         {% for memo in memos %}
-        <div class="card">
-            <img class="card-img-top"
-                 src="{{ memo['image'] }}"
-                 alt="Card image cap">
-            <div class="card-body">
-                <a href="{{ memo['url'] }}" class="card-title">{{ memo['title'] }}</a>
-                <p class="card-text">{{ memo['description'] }}</p>
-                <p class="card-text comment">{{ memo['comment'] }}</p>
+            <div class="card">
+                <img class="card-img-top"
+                     src="{{ memo['image'] }}"
+                     alt="Card image cap">
+                <div class="card-body">
+                    <a href="{{ memo['url'] }}" class="card-title">{{ memo['title'] }}</a>
+                    <p class="card-text">{{ memo['description'] }}</p>
+                    <p class="card-text comment">{{ memo['comment'] }}</p>
+                </div>
             </div>
-        </div>
         {% endfor %}
     </div>
 </div>

@@ -21,6 +21,9 @@ db = client.get_database('myung')
 load_dotenv()
 # load_dotenv() 설정
 JWT_SECRET = os.environ['JWT_SECRET']
+CLIENT_ID = os.environ['CLIENT_ID']
+CALLBACK_URL = os.environ['CALLBACK_URL']
+SERVICE_URL = os.environ['SERVICE_URL']
 
 
 # API 추가
@@ -38,14 +41,18 @@ def index():  # 함수 이름은 고유해야 한다
     else:
         memos = []
 
-    return render_template('index.html', test='테스트', memos=memos)
+    return render_template('index.html', test=id, memos=memos)
 
 
 # 로그인
 @app.route('/login', methods=['GET'])
 def login():
-    return render_template('login.html')
-
+    return render_template(
+        'login.html',
+        CLIENT_ID = CLIENT_ID,
+        CALLBACK_URL = CALLBACK_URL,
+        SERVICE_URL=SERVICE_URL
+    )
 
 # 가입
 @app.route('/register', methods=['GET'])
