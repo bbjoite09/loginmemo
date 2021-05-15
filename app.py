@@ -21,9 +21,6 @@ db = client.get_database('myung')
 load_dotenv()
 # load_dotenv() 설정
 JWT_SECRET = os.environ['JWT_SECRET']
-CLIENT_ID = os.environ['CLIENT_ID']
-CALLBACK_URL = os.environ['CALLBACK_URL']
-SERVICE_URL = os.environ['SERVICE_URL']
 
 
 # API 추가
@@ -41,23 +38,32 @@ def index():  # 함수 이름은 고유해야 한다
     else:
         memos = []
 
-    return render_template('index.html', test=id, memos=memos)
+    return render_template('index.html', test='테스트', memos=memos)
 
 
 # 로그인
 @app.route('/login', methods=['GET'])
 def login():
-    return render_template(
-        'login.html',
-        CLIENT_ID = CLIENT_ID,
-        CALLBACK_URL = CALLBACK_URL,
-        SERVICE_URL=SERVICE_URL
-    )
+    CLIENT_ID = os.environ['CLIENT_ID']
+    CALLBACK_URL = os.environ['CALLBACK_URL']
+    SERVICE_URL = os.environ['SERVICE_URL']
+
+    return render_template('login.html', CLIENT_ID=CLIENT_ID, CALLBACK_URL=CALLBACK_URL, SERVICE_URL=SERVICE_URL)
+
 
 # 가입
 @app.route('/register', methods=['GET'])
 def register():
     return render_template('register.html')
+
+
+# 네아로 콜백
+@app.route('/naver', methods=['GET'])
+def callback():
+    CLIENT_ID = os.environ['CLIENT_ID']
+    CALLBACK_URL = os.environ['CALLBACK_URL']
+
+    return render_template('callback.html', CALLBACK_URL=CALLBACK_URL, CLIENT_ID=CLIENT_ID)
 
 
 # 가입 API
@@ -70,6 +76,27 @@ def api_register():
     db.user.insert_one({'id': id, 'pw': pw_hash})
 
     return jsonify({'result': 'success'})
+
+
+# 네이버 가입 API
+@app.route('/api/register/naver', methods=['POST'])
+def api_register_naver():
+    naver_id = request.form['naver_id_give']
+    print(naver_id)
+
+    # 아직 가입하지 않은 naver id 케이스에서는 가입까지 처리
+    if not db.user.find_one({'id': naver_id}, {'_id': False}):
+        db.user.insert_one({'id': naver_id, 'pw': ''})
+
+    expiration_time = datetime.timedelta(hours=1)
+    payload = {
+        'id': naver_id,
+        # JWT 유효 기간 - 이 시간 이후에는 JWT 인증이 불가능합니다.
+        'exp': datetime.datetime.utcnow() + expiration_time,
+    }
+    token = jwt.encode(payload, JWT_SECRET)
+
+    return jsonify({'result': 'success', 'token': token})
 
 
 # 로그인 API
