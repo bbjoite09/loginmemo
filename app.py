@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 # mongodb 추가
 client = MongoClient('localhost', 27017)
-db = client.get_database('homepage')
+db = client.get_database('myung')
 
 # .env 파일 읽어와 환경변수로 추가
 load_dotenv()
