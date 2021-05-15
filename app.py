@@ -64,6 +64,13 @@ def list_memo():
 
     return jsonify(result)
 
+@app.route('login', methods=['GET'])
+def login():
+    return render_template('login.html')
+
+@app.route('register', methods=['GET'])
+def login():
+    return render_template('register.html')
 
 # app.py 파일을 직접 실행시킬 때 동작시킴
 # 이 코드가 가장 아랫부분
