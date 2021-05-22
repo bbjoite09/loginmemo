@@ -22,7 +22,7 @@ def create_app(database_name='sparta'):
     global db
     db = client.get_database(database_name)
 
-
+    # 순환 참조 방지
     from views import api, main, memo, user
 
     app.register_blueprint(api.bp)
