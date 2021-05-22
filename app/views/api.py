@@ -1,73 +1,73 @@
 import datetime
 import hashlib
-import os
 
 import jwt
-from dotenv import load_dotenv
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
+
 from app import db
 
-load_dotenv()
-# load_dotenv() 설정
-JWT_SECRET = os.environ['JWT_SECRET']
-
-bp = Blueprint(
-    'api', # 블루프린트 이름
-    __name__,   # 파일 등록(현재파일)
-    url_prefix='/api' # 패스 접두사
-)
-
-# 가입 API
-@bp.route('/api/register', methods=['POST'])
-def api_register():
-    id = request.form['id_give']
-    pw = request.form['pw_give']
-
-    pw_hash = hashlib.sha256(pw.encode()).hexdigest()
-    db.user.insert_one({'id': id, 'pw': pw_hash})
-
-    return jsonify({'result': 'success'})
+bp = Blueprint('api', __name__, url_prefix='/api')
 
 
-# 네이버 가입 API
-@bp.route('/api/register/naver', methods=['POST'])
+@bp.route('/register/naver', methods=['POST'])
 def api_register_naver():
-    naver_id = request.form['naver_id_give']
-    print(naver_id)
+    naver_id = request.form['naver_id']
 
-    # 아직 가입하지 않은 naver id 케이스에서는 가입까지 처리
-    if not db.user.find_one({'id': naver_id}, {'_id': False}):
-        db.user.insert_one({'id': naver_id, 'pw': ''})
+    if not db.users.find_one({'id': naver_id}, {'_id': False}):
+        db.users.insert_one({'id': naver_id, 'pw': ''})
 
+    # JWT 발급
     expiration_time = datetime.timedelta(hours=1)
+
     payload = {
         'id': naver_id,
-        # JWT 유효 기간 - 이 시간 이후에는 JWT 인증이 불가능합니다.
-        'exp': datetime.datetime.utcnow() + expiration_time,
+        'exp': datetime.datetime.utcnow() + expiration_time
     }
-    token = jwt.encode(payload, JWT_SECRET)
+    token = jwt.encode(payload, current_app.config['JWT_SECRET'])
+    print(token)
 
     return jsonify({'result': 'success', 'token': token})
 
 
-# 로그인 API
-@bp.route('/api/login', methods=['POST'])
+@bp.route('/login', methods=['POST'])
 def api_login():
     id = request.form['id_give']
     pw = request.form['pw_give']
 
     pw_hash = hashlib.sha256(pw.encode()).hexdigest()
-    user = db.user.find_one({'id': id, 'pw': pw_hash})
 
-    # 로그인 성공 시 JWT 리턴
+    user = db.users.find_one({'id': id, 'pw': pw_hash}, {'_id': False})
+
+    # 만약 가입했다면?
     if user:
+        # 로그인 성공이기 때문에 JWT 생성
         expiration_time = datetime.timedelta(hours=1)
         payload = {
             'id': id,
-            # JWT 유효 기간 - 이 시간 이후에는 JWT 인증이 불가능합니다.
-            'exp': datetime.datetime.utcnow() + expiration_time,
+            # 발급시간으로부터 1시간동안 JWT 유효
+            'exp': datetime.datetime.utcnow() + expiration_time
         }
-        token = jwt.encode(payload, JWT_SECRET)
-        return jsonify({'result': 'success', 'token': token})
+        token = jwt.encode(payload, current_app.config['JWT_SECRET'])
+        print(token)
 
-    return jsonify({'result': 'fail', 'msg': '아이디 비밀번호 불일치'})
+        return jsonify({'result': 'success', 'token': token})
+    else:
+        # 가입하지 않은 상태
+        return jsonify({'result': 'fail', 'msg': '로그인 실패'})
+
+
+@bp.route('/register', methods=['POST'])
+def api_register():
+    id = request.form['id_give']
+    pw = request.form['pw_give']
+
+    # salting
+    # 1. pw + 랜덤 문자열 추가(솔트)
+    # 솔트 추가된 비밀번호를 해시
+    # DB에 저장할 때는 (해시 결과물 + 적용한 솔트) 묶어서 저장
+
+    # 회원가입
+    pw_hash = hashlib.sha256(pw.encode()).hexdigest()
+    db.users.insert_one({'id': id, 'pw': pw_hash})
+
+    return jsonify({'result': 'success'})
