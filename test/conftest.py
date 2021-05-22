@@ -9,7 +9,7 @@ db = client.get_database(test_database_name)
 
 @pytest.fixture
 def  app():
-    test_app = flask_app.cleate_app(test_database_name)
+    test_app = flask_app.create_app(test_database_name)
 
     # 제너레이터 문법(yield 구문까지만 실행하고 대기,
     # 이후 다시 호출할 때 yield 구문 다음이 진행됨)
