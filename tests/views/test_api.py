@@ -23,7 +23,7 @@ def test_회원가입(client):
         data=data
     )
 
-    assert response, status_code == 200
+    assert response.status_code == 200
 
     user = db.users.find_one({'id' : "test05"}, {'_id' : False})
 
