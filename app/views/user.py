@@ -1,8 +1,13 @@
 import jwt
-from flask import Blueprint, request, current_app, jsonify
+from flask import Blueprint, request, jsonify
 
-bp = Blueprint('user', __name__, url_prefix='/user')
+from app import JWT_SECRET
 
+bp = Blueprint(
+    'user',
+    __name__,
+    url_prefix='/user'
+)
 
 @bp.route('', methods=['POST'])
 def user_info():
@@ -11,7 +16,7 @@ def user_info():
     print(token)
 
     try:
-        payload = jwt.decode(token, current_app.config['JWT_SECRET'], algorithms=['HS256'])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
         print(payload)
         return jsonify({'result': 'success', 'id': payload['id']})
     except jwt.exceptions.ExpiredSignatureError:

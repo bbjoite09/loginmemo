@@ -1,13 +1,17 @@
 import jwt
 import requests
 from bs4 import BeautifulSoup
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 
-from app import db
+from app import db, JWT_SECRET
 
-bp = Blueprint('memo', __name__, url_prefix='/memo')
+bp = Blueprint(
+    'memo',
+    __name__,
+    url_prefix='/memo'
+)
 
-
+# 아티클 추가 API
 @bp.route('', methods=['POST'])
 def save_memo():
     form = request.form
@@ -19,7 +23,7 @@ def save_memo():
     print(token)
 
     try:
-        payload = jwt.decode(token, current_app.config['JWT_SECRET'], algorithms=['HS256'])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
         print(payload)
     except jwt.exceptions.ExpiredSignatureError:
         return jsonify({'result': 'fail'})
@@ -54,7 +58,7 @@ def save_memo():
     )
 
 
-@bp.route('', methods=['GET'])
+@bp.route('/memo', methods=['GET'])
 def list_memo():
     memos = list(db.articles.find({}, {'_id': False}))
     result = {
