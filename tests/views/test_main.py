@@ -7,7 +7,7 @@ def test_메인_페이지(client):
 
     # assert 구문을 이용해서 검증
     # html 파일을 잘 리턴해주는지 확인
-    assert response.status_code == 400
+    assert response.status_code == 200
 
 
 def test_로그인_페이지(client):
