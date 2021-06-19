@@ -75,3 +75,8 @@ def api_register():
     db.users.insert_one({'id': id, 'pw': pw_hash})
 
     return jsonify({'result': 'success'})
+
+@bp.route('/debug-sentry')
+def trigger_error():
+    division_by_zero = 1 / 0
+    return division_by_zero
